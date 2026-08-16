@@ -204,7 +204,6 @@ public class ItemPersistenceService : IItemPersistenceService
         cancellationToken.ThrowIfCancellationRequested();
 
         var dbContext = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-
         await using (dbContext.ConfigureAwait(false))
         {
             var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
@@ -538,7 +537,7 @@ public class ItemPersistenceService : IItemPersistenceService
                 var childIdsToCheck = resolvedChildren.Select(c => c.ChildId).Distinct().ToList();
                 var existingChildIds = childIdsToCheck.Count > 0
                     ? context.BaseItems
-                        .Where(e => childIdsToCheck.Contains(e.Id))
+                        .WhereOneOrMany(childIdsToCheck, e => e.Id)
                         .Select(e => e.Id)
                         .ToHashSet()
                     : [];
